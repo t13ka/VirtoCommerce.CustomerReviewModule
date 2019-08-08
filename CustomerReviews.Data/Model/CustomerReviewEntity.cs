@@ -22,6 +22,9 @@ namespace CustomerReviews.Data.Model
         [StringLength(128)]
         public string ProductId { get; set; }
 
+        [Required]
+        public float Rating { get; set; }
+
         public virtual CustomerReviewEntity FromModel(CustomerReview customerReview, PrimaryKeyResolvingMap pkMap)
         {
             if (customerReview == null)
@@ -41,6 +44,7 @@ namespace CustomerReviews.Data.Model
             Content = customerReview.Content;
             IsActive = customerReview.IsActive;
             ProductId = customerReview.ProductId;
+            Rating = customerReview.Rating;
 
             return this;
         }
@@ -56,6 +60,7 @@ namespace CustomerReviews.Data.Model
             target.Content = Content;
             target.IsActive = IsActive;
             target.ProductId = ProductId;
+            target.Rating = Rating;
         }
 
         public virtual CustomerReview ToModel(CustomerReview customerReview)
@@ -75,6 +80,7 @@ namespace CustomerReviews.Data.Model
             customerReview.Content = Content;
             customerReview.IsActive = IsActive;
             customerReview.ProductId = ProductId;
+            customerReview.Rating = Rating;
 
             return customerReview;
         }

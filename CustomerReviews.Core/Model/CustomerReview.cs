@@ -11,5 +11,7 @@ namespace CustomerReviews.Core.Model
         public bool IsActive { get; set; }
 
         public string ProductId { get; set; }
+
+        public float Rating { get; set; }
     }
 }
