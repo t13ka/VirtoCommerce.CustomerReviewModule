@@ -9,5 +9,7 @@ namespace CustomerReviews.Core.Services
         CustomerReview[] GetByIds(string[] ids);
 
         void SaveCustomerReviews(CustomerReview[] newCustomerReviews);
+
+        float GetProductRating(string productId);
     }
 }

@@ -80,6 +80,18 @@ namespace CustomerReviews.Data.Services
             }
         }
 
+        public float GetProductRating(string productId)
+        {
+            float productAverageRating;
+            using (var repository = _repositoryFactory())
+            {
+                var productCustomerReviews = repository.CustomerReviews.Where(customerReview => customerReview.ProductId == productId);
+                productAverageRating = productCustomerReviews.Average(customerReview => customerReview.Rating);
+            }
+
+            return productAverageRating;
+        }
+
         private static CustomerReview ConvertEntityToModel(CustomerReviewEntity entity)
         {
             return entity.ToModel(AbstractTypeFactory<CustomerReview>.TryCreateInstance());

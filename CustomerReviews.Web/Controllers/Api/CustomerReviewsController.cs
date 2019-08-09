@@ -22,6 +22,15 @@ namespace CustomerReviews.Web.Controllers.Api
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CustomerReviewsController"/> class.
+        /// </summary>
+        /// <param name="customerReviewSearchService">
+        /// The customer review search service.
+        /// </param>
+        /// <param name="customerReviewService">
+        /// The customer review service.
+        /// </param>
         public CustomerReviewsController(
             ICustomerReviewSearchService customerReviewSearchService,
             ICustomerReviewService customerReviewService)
@@ -31,10 +40,14 @@ namespace CustomerReviews.Web.Controllers.Api
         }
 
         /// <summary>
-        /// Delete Customer Reviews by IDs
+        /// Delete customer reviews by IDs
         /// </summary>
-        /// <param name="ids">IDs</param>
-        /// <returns></returns>
+        /// <param name="ids">
+        /// The ids.
+        /// </param>
+        /// <returns>
+        /// The <see cref="IHttpActionResult"/>.
+        /// </returns>
         [HttpDelete]
         [Route("")]
         [ResponseType(typeof(void))]
@@ -46,8 +59,33 @@ namespace CustomerReviews.Web.Controllers.Api
         }
 
         /// <summary>
-        /// Return product Customer review search results
+        /// Get product rating.
         /// </summary>
+        /// <param name="productId">
+        /// The product id.
+        /// </param>
+        /// <returns>
+        /// The <see cref="IHttpActionResult"/>.
+        /// </returns>
+        [HttpGet]
+        [Route("rating")]
+        [ResponseType(typeof(string))]
+        [CheckPermission(Permission = PredefinedPermissions.CustomerReviewRead)]
+        public IHttpActionResult GetProductRating(string productId)
+        {
+            var result = _customerReviewService.GetProductRating(productId);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Search customer reviews.
+        /// </summary>
+        /// <param name="criteria">
+        /// The criteria.
+        /// </param>
+        /// <returns>
+        /// The <see cref="IHttpActionResult"/>.
+        /// </returns>
         [HttpPost]
         [Route("search")]
         [ResponseType(typeof(GenericSearchResult<CustomerReview>))]
@@ -59,10 +97,14 @@ namespace CustomerReviews.Web.Controllers.Api
         }
 
         /// <summary>
-        ///  Create new or update existing customer review
+        /// Create new or update existing customer review.
         /// </summary>
-        /// <param name="customerReviews">Customer reviews</param>
-        /// <returns></returns>
+        /// <param name="customerReviews">
+        /// The customer reviews.
+        /// </param>
+        /// <returns>
+        /// The <see cref="IHttpActionResult"/>.
+        /// </returns>
         [HttpPost]
         [Route("")]
         [ResponseType(typeof(void))]
