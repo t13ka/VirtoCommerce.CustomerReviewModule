@@ -33,43 +33,61 @@ namespace CustomerReviews.Data.Services
         {
             using (var repository = _repositoryFactory())
             {
-                return repository.GetByIds(ids)
-                    .Select(x => x.ToModel(AbstractTypeFactory<CustomerReview>.TryCreateInstance())).ToArray();
+                var customerReviewEntities = repository.GetByIds(ids);
+                var customerReviews = customerReviewEntities.Select(ConvertEntityToModel);
+                var customerReviewsArray = customerReviews.ToArray();
+                return customerReviewsArray;
             }
         }
 
-        public void SaveCustomerReviews(CustomerReview[] items)
+        public void SaveCustomerReviews(CustomerReview[] newCustomerReviews)
         {
-            if (items == null)
-                throw new ArgumentNullException(nameof(items));
-
-            var pkMap = new PrimaryKeyResolvingMap();
-            using (var repository = _repositoryFactory())
+            if (newCustomerReviews == null)
             {
-                using (var changeTracker = GetChangeTracker(repository))
-                {
-                    var alreadyExistEntities =
-                        repository.GetByIds(items.Where(m => !m.IsTransient()).Select(x => x.Id).ToArray());
-                    foreach (var derivativeContract in items)
-                    {
-                        var sourceEntity = AbstractTypeFactory<CustomerReviewEntity>.TryCreateInstance()
-                            .FromModel(derivativeContract, pkMap);
-                        var targetEntity = alreadyExistEntities.FirstOrDefault(x => x.Id == sourceEntity.Id);
-                        if (targetEntity != null)
-                        {
-                            changeTracker.Attach(targetEntity);
-                            sourceEntity.Patch(targetEntity);
-                        }
-                        else
-                        {
-                            repository.Add(sourceEntity);
-                        }
-                    }
-
-                    CommitChanges(repository);
-                    pkMap.ResolvePrimaryKeys();
-                }
+                throw new ArgumentNullException(nameof(newCustomerReviews));
             }
+
+            using (var repository = _repositoryFactory())
+            using (var changeTracker = GetChangeTracker(repository))
+            {
+                var keyResolvingMap = new PrimaryKeyResolvingMap();
+
+                var nonTransientCustomerReviews = newCustomerReviews.Where(customerReview => !customerReview.IsTransient());
+
+                var ids = nonTransientCustomerReviews.Select(x => x.Id).ToArray();
+
+                var alreadyExistEntities = repository.GetByIds(ids);
+                
+                foreach (var newCustomerReview in newCustomerReviews)
+                {
+                    var sourceEntity = CreateEntity(newCustomerReview, keyResolvingMap);
+                    var targetEntity = alreadyExistEntities.FirstOrDefault(x => x.Id == sourceEntity.Id);
+
+                    if (targetEntity != null)
+                    {
+                        changeTracker.Attach(targetEntity);
+                        sourceEntity.Patch(targetEntity);
+                    }
+                    else
+                    {
+                        repository.Add(sourceEntity);
+                    }
+                }
+
+                CommitChanges(repository);
+                
+                keyResolvingMap.ResolvePrimaryKeys();
+            }
+        }
+
+        private static CustomerReview ConvertEntityToModel(CustomerReviewEntity entity)
+        {
+            return entity.ToModel(AbstractTypeFactory<CustomerReview>.TryCreateInstance());
+        }
+
+        private static CustomerReviewEntity CreateEntity(CustomerReview source, PrimaryKeyResolvingMap keyResolvingMap)
+        {
+            return AbstractTypeFactory<CustomerReviewEntity>.TryCreateInstance().FromModel(source, keyResolvingMap);
         }
     }
 }
