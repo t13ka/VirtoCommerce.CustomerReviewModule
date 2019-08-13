@@ -86,7 +86,7 @@ namespace CustomerReviews.Data.Services
             using (var repository = _repositoryFactory())
             {
                 var productCustomerReviews = repository.CustomerReviews.Where(customerReview => customerReview.ProductId == productId);
-                productAverageRating = productCustomerReviews.Average(customerReview => customerReview.Rating);
+                productAverageRating = productCustomerReviews.Select(customerReview => customerReview.Rating).DefaultIfEmpty().Average();
             }
 
             return productAverageRating;
