@@ -114,7 +114,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CustomerReviewsTests.cs" />
+    <Compile Include="CustomerReviewsSearchServiceTests.cs" />
+    <Compile Include="CustomerReviewsServiceTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
