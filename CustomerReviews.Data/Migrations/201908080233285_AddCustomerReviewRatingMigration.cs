@@ -1,6 +1,5 @@
 namespace CustomerReviews.Data.Migrations
 {
-    using System;
     using System.Data.Entity.Migrations;
     
     public partial class AddCustomerReviewRatingMigration : DbMigration
@@ -8,6 +7,7 @@ namespace CustomerReviews.Data.Migrations
         public override void Up()
         {
             AddColumn("dbo.CustomerReview", "Rating", c => c.Single(nullable: false));
+            Sql("UPDATE dbo.CustomerReview SET Rating = '0'");
         }
         
         public override void Down()
