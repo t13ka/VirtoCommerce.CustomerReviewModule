@@ -25,7 +25,7 @@ namespace CustomerReviews.Data.Services
             _customerReviewService = customerReviewService;
         }
 
-        public GenericSearchResult<CustomerReview> SearchCustomerReviews(CustomerReviewSearchCriteria criteria)
+        public GenericSearchResult<CustomerReview> Search(CustomerReviewSearchCriteria criteria)
         {
             if (criteria == null)
             {
