@@ -92,7 +92,7 @@ namespace CustomerReviews.Web.Controllers.Api
         [CheckPermission(Permission = PredefinedPermissions.CustomerReviewRead)]
         public IHttpActionResult SearchCustomerReviews(CustomerReviewSearchCriteria criteria)
         {
-            var result = _customerReviewSearchService.SearchCustomerReviews(criteria);
+            var result = _customerReviewSearchService.Search(criteria);
             return Ok(result);
         }
 
