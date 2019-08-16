@@ -10,10 +10,6 @@ namespace CustomerReviews.Data.Repositories
 
     public class CustomerReviewRepository : EFRepositoryBase, ICustomerReviewRepository
     {
-        public CustomerReviewRepository()
-        {
-        }
-
         public CustomerReviewRepository(string nameOrConnectionString, params IInterceptor[] interceptors)
             : base(nameOrConnectionString, null, interceptors)
         {
@@ -33,12 +29,14 @@ namespace CustomerReviews.Data.Repositories
 
         public CustomerReviewEntity[] GetByIds(string[] ids)
         {
-            return CustomerReviews.Where(x => ids.Contains(x.Id)).ToArray();
+            return CustomerReviews.Where(entity => ids.Contains(entity.Id)).ToArray();
         }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<CustomerReviewEntity>().ToTable("CustomerReview").HasKey(x => x.Id).Property(x => x.Id);
+            modelBuilder.Entity<CustomerReviewEntity>().ToTable("CustomerReview")
+                .HasKey(entity => entity.Id)
+                .Property(entity => entity.Id);
 
             base.OnModelCreating(modelBuilder);
         }

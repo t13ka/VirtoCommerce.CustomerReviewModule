@@ -54,14 +54,14 @@ namespace CustomerReviews.Data.Services
 
                 var nonTransientCustomerReviews = newCustomerReviews.Where(customerReview => !customerReview.IsTransient());
 
-                var ids = nonTransientCustomerReviews.Select(x => x.Id).ToArray();
+                var ids = nonTransientCustomerReviews.Select(customerReview => customerReview.Id).ToArray();
 
                 var alreadyExistEntities = repository.GetByIds(ids);
                 
                 foreach (var newCustomerReview in newCustomerReviews)
                 {
                     var sourceEntity = CreateEntity(newCustomerReview, keyResolvingMap);
-                    var targetEntity = alreadyExistEntities.FirstOrDefault(x => x.Id == sourceEntity.Id);
+                    var targetEntity = alreadyExistEntities.FirstOrDefault(reviewEntity => reviewEntity.Id == sourceEntity.Id);
 
                     if (targetEntity != null)
                     {
