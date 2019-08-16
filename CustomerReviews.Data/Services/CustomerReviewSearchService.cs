@@ -5,6 +5,7 @@ namespace CustomerReviews.Data.Services
 
     using CustomerReviews.Core.Model;
     using CustomerReviews.Core.Services;
+    using CustomerReviews.Data.Model;
     using CustomerReviews.Data.Repositories;
 
     using VirtoCommerce.Domain.Commerce.Model.Search;
@@ -27,54 +28,80 @@ namespace CustomerReviews.Data.Services
 
         public GenericSearchResult<CustomerReview> Search(CustomerReviewSearchCriteria criteria)
         {
+            ValidateCriteria(criteria);
+
+            using (var repository = _repositoryFactory())
+            {
+                var reviewsQuery = BuildCustomerReviewsQuery(repository, criteria);
+                var reviewsTotalCount = reviewsQuery.Count();
+                var reviewsIdsQuery = reviewsQuery
+                    .Skip(criteria.Skip)
+                    .Take(criteria.Take)
+                    .Select(entity => entity.Id);
+
+                var idsList = reviewsIdsQuery.ToList();
+                var idsArray = idsList.ToArray();
+
+                var reviews = _customerReviewService.GetByIds(idsArray);
+                var sortedReviews = reviews.OrderBy(review => idsList.IndexOf(review.Id));
+                var resultedReviews = sortedReviews.ToList();
+
+                return new GenericSearchResult<CustomerReview>
+                    {
+                        TotalCount = reviewsTotalCount, 
+                        Results = resultedReviews
+                    };
+            }
+        }
+
+        private static void ValidateCriteria(CustomerReviewSearchCriteria criteria)
+        {
             if (criteria == null)
             {
                 throw new ArgumentNullException($"{nameof(criteria)} must be set");
             }
+        }
 
-            var retVal = new GenericSearchResult<CustomerReview>();
+        private static IQueryable<CustomerReviewEntity> BuildCustomerReviewsQuery(
+            ICustomerReviewRepository repository,
+            CustomerReviewSearchCriteria criteria)
+        {
+            var query = repository.CustomerReviews;
 
-            using (var repository = _repositoryFactory())
+            if (!criteria.ProductIds.IsNullOrEmpty())
             {
-                var query = repository.CustomerReviews;
-
-                if (!criteria.ProductIds.IsNullOrEmpty())
-                {
-                    query = query.Where(x => criteria.ProductIds.Contains(x.ProductId));
-                }
-
-                if (criteria.IsActive.HasValue)
-                {
-                    query = query.Where(x => x.IsActive == criteria.IsActive);
-                }
-
-                if (!criteria.SearchPhrase.IsNullOrEmpty())
-                {
-                    query = query.Where(x => x.Content.Contains(criteria.SearchPhrase));
-                }
-
-                var sortInfos = criteria.SortInfos;
-                if (sortInfos.IsNullOrEmpty())
-                {
-                    sortInfos = new[]
-                                    {
-                                        new SortInfo
-                                            {
-                                                SortColumn = "CreatedDate", SortDirection = SortDirection.Descending
-                                            }
-                                    };
-                }
-
-                query = query.OrderBySortInfos(sortInfos);
-
-                retVal.TotalCount = query.Count();
-
-                var customerReviewIds = query.Skip(criteria.Skip).Take(criteria.Take).Select(x => x.Id).ToList();
-
-                retVal.Results = _customerReviewService.GetByIds(customerReviewIds.ToArray())
-                    .OrderBy(x => customerReviewIds.IndexOf(x.Id)).ToList();
-                return retVal;
+                query = query.Where(entity => criteria.ProductIds.Contains(entity.ProductId));
             }
+
+            if (criteria.IsActive.HasValue)
+            {
+                query = query.Where(entity => entity.IsActive == criteria.IsActive);
+            }
+
+            if (!criteria.SearchPhrase.IsNullOrEmpty())
+            {
+                query = query.Where(entity => entity.Content.Contains(criteria.SearchPhrase));
+            }
+
+            return query.OrderBySortInfos(CreateSortInfo(criteria));
+        }
+
+        private static SortInfo[] CreateSortInfo(SearchCriteriaBase criteria)
+        {
+            var sortInfos = criteria.SortInfos;
+            if (sortInfos.IsNullOrEmpty())
+            {
+                sortInfos = new[]
+                    {
+                        new SortInfo
+                            {
+                                SortColumn = "CreatedDate", 
+                                SortDirection = SortDirection.Descending
+                            }
+                    };
+            }
+
+            return sortInfos;
         }
     }
 }
